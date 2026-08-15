@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AppointmentActions } from "@/components/staff/appointment-actions";
+import { BackButton } from "@/components/staff/back-button";
+
 
 export const metadata: Metadata = {
   title: "Appointments — RAPHA Staff",
@@ -110,12 +111,7 @@ export default async function StaffAppointmentsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link
-            href="/staff"
-            className="text-sm font-medium text-clinical-600 hover:text-clinical-700"
-          >
-            ← Back to Staff Dashboard
-          </Link>
+          <BackButton />
 
           <h1 className="mt-4 font-display text-2xl font-bold text-clinical-950">
             Appointments
