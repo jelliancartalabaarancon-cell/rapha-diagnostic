@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+
+import type { Metadata, Viewport } from "next";
 import { Manrope, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -28,6 +29,11 @@ export const metadata: Metadata = {
     "RAPHA Diagnostic Laboratory — accurate, timely diagnostic testing and a patient portal for managing your appointments and results.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,11 +45,12 @@ export default function RootLayout({
       className={`${display.variable} ${body.variable} ${dataMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white font-body text-slate-700">
-  <Providers>
-    {children}
-    <Chatbot />
-  </Providers>
-</body>
+        <Providers>
+          {children}
+          <Chatbot />
+        </Providers>
+      </body>
     </html>
   );
 }
+
