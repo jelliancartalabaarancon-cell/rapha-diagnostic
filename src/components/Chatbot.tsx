@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -15,174 +16,255 @@ export default function Chatbot() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   async function sendMessage() {
-  if (!message.trim() || loading) return;
+    if (!message.trim() || loading) return;
 
-  const userMessage = {
-    role: "user" as const,
-    content: message,
-  };
+    const userMessage = {
+      role: "user" as const,
+      content: message,
+    };
 
-  setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage("");
+    setLoading(true);
 
-setMessage("");
+    try {
+      const res = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+        }),
+      });
 
-setLoading(true);
+      const data = await res.json();
 
-  try {
-    const res = await fetch("/api/chatbot", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message,
-      }),
-    });
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.reply,
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
 
-    const data = await res.json();
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content: data.reply,
-      },
-    ]);
-
-    
-
-  } catch (error) {
-    console.error(error);
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content: "Sorry, something went wrong.",
-      },
-    ]);
-
-  } finally {
-    setLoading(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, something went wrong.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-useEffect(() => {
-  chatEndRef.current?.scrollIntoView({
-    behavior: "smooth",
-  });
-}, [messages, loading]);
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
 
   return (
     <>
       {/* Floating Button */}
       <button
-  onClick={() => setOpen(!open)}
-  className="fixed bottom-5 right-5 bg-blue-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center"
->
-  <img
-    src="/robot.png"
-    alt="Chatbot"
-    className="w-8 h-8"
-  />
-</button>
-
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-label={open ? "Close chatbot" : "Open chatbot"}
+        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 sm:bottom-5 sm:right-5"
+      >
+        <img
+          src="/robot.png"
+          alt="Chatbot"
+          className="h-8 w-8"
+        />
+      </button>
 
       {/* Chat Window */}
       {open && (
-        <div className="fixed bottom-20 right-5 w-96 bg-white border shadow-xl rounded-xl p-4">
+        <div
+          className="
+            fixed
+            bottom-20
+            left-4
+            right-4
+            z-50
+            flex
+            max-h-[calc(100vh-6rem)]
+            flex-col
+            overflow-hidden
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
+            p-3
+            shadow-2xl
 
-          <div className="flex justify-between mb-3">
-            <h2 className="font-bold">
-              RAPHA AI Assistant
-            </h2>
+            sm:left-auto
+            sm:right-5
+            sm:w-[380px]
+            sm:p-4
 
-            <button onClick={() => setOpen(false)}>
+            md:w-96
+          "
+        >
+          {/* Header */}
+          <div className="mb-3 flex shrink-0 items-center justify-between">
+            <div className="min-w-0">
+              <h2 className="truncate font-bold text-slate-800">
+                RAPHA AI Assistant
+              </h2>
+
+              <p className="text-xs text-slate-400">
+                RAPHA Diagnostic Laboratory
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close chatbot"
+              className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100"
+            >
               ✕
             </button>
           </div>
 
-
-          <div className="h-64 overflow-y-auto border rounded p-2 mb-3">
+          {/* Messages */}
+          <div
+            className="
+              min-h-0
+              flex-1
+              overflow-y-auto
+              rounded-lg
+              border
+              border-slate-200
+              p-2
+              sm:p-3
+            "
+          >
             {messages.length === 0 && (
-              <p className="text-gray-500">
+              <p className="text-sm text-gray-500">
                 Hello! How can I help you today?
               </p>
             )}
 
             {messages.map((msg, index) => (
-  <div
-    key={index}
-    className={`flex mb-2 ${
-      msg.role === "user"
-        ? "justify-end"
-        : "justify-start"
-    }`}
-  >
-    <div
-      className={`max-w-[75%] px-3 py-2 rounded-lg ${
-        msg.role === "user"
-          ? "bg-blue-600 text-white"
-          : "bg-gray-200 text-gray-800"
-      }`}
-    >
-      <p className="text-xs font-bold mb-1">
-        {msg.role === "user"
-          ? "You"
-          : "RAPHA DIAGNOSTIC LABORATORY"}
-      </p>
+              <div
+                key={index}
+                className={`mb-2 flex ${
+                  msg.role === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                <div
+                  className={`
+                    max-w-[85%]
+                    overflow-hidden
+                    rounded-lg
+                    px-3
+                    py-2
+                    text-sm
+                    sm:max-w-[75%]
+                    ${
+                      msg.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }
+                  `}
+                >
+                  <p className="mb-1 text-xs font-bold">
+                    {msg.role === "user"
+                      ? "You"
+                      : "RAPHA DIAGNOSTIC LABORATORY"}
+                  </p>
 
-      <Markdown>
-  {msg.content}
-</Markdown>
-    </div>
-  </div>
-))}
+                  <div className="break-words">
+                    <Markdown>{msg.content}</Markdown>
+                  </div>
+                </div>
+              </div>
+            ))}
+
             {loading && (
-  <div className="flex mb-2 justify-start">
-    <div className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg">
-      <p className="text-xs font-bold mb-1">
-        RAPHA
-      </p>
+              <div className="mb-2 flex justify-start">
+                <div className="max-w-[85%] rounded-lg bg-gray-200 px-3 py-2 text-gray-800 sm:max-w-[75%]">
+                  <p className="mb-1 text-xs font-bold">
+                    RAPHA
+                  </p>
 
-      <p className="italic">
-        RAPHA AI is typing...
-      </p>
-    </div>
-  </div>
-)}
+                  <p className="text-sm italic">
+                    RAPHA AI is typing...
+                  </p>
+                </div>
+              </div>
+            )}
 
-<div ref={chatEndRef} />
+            <div ref={chatEndRef} />
           </div>
 
-
-          <div className="flex gap-2">
+          {/* Input */}
+          <div className="mt-3 flex shrink-0 gap-2">
             <input
-             disabled={loading}
-              className="border rounded px-2 py-1 flex-1 disabled:bg-gray-100"
+              type="text"
+              disabled={loading}
+              className="
+                min-w-0
+                flex-1
+                rounded-lg
+                border
+                border-slate-200
+                px-3
+                py-2
+                text-sm
+                outline-none
+                transition
+                focus:border-blue-500
+                focus:ring-2
+                focus:ring-blue-100
+                disabled:bg-gray-100
+              "
               value={message}
-              onChange={(e) =>
-                setMessage(e.target.value)
-              }
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Ask RAPHA..."
               onKeyDown={(e) => {
-  if (e.key === "Enter" && !loading) {
-    sendMessage();
-  }
-}}
+                if (e.key === "Enter" && !loading) {
+                  sendMessage();
+                }
+              }}
             />
 
             <button
-  onClick={sendMessage}
-  disabled={loading}
-  className="bg-blue-600 text-white px-3 rounded disabled:opacity-50"
->
-  {loading ? "Sending..." : "Send"}
-</button>
+              type="button"
+              onClick={sendMessage}
+              disabled={loading}
+              className="
+                shrink-0
+                rounded-lg
+                bg-blue-600
+                px-3
+                py-2
+                text-sm
+                font-medium
+                text-white
+                transition
+                hover:bg-blue-700
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+                sm:px-4
+              "
+            >
+              {loading ? "..." : "Send"}
+            </button>
           </div>
-
         </div>
       )}
     </>
   );
 }
+
