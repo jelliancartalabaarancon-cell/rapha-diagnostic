@@ -29,7 +29,7 @@ export function Footer() {
           <ul className="mt-4 space-y-3 text-sm text-clinical-200/80">
             <li className="flex gap-2.5">
               <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>2F RAPHA Medical Building, National Highway, Koronadal City, South Cotabato</span>
+              <span>Esperanza Building, Quezon Blvd, Kidapawan, 9400 Cotabato</span>
             </li>
             <li className="flex gap-2.5">
               <Phone className="h-4 w-4 shrink-0 mt-0.5" />

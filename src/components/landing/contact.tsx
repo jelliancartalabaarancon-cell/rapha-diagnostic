@@ -4,7 +4,7 @@ const CONTACT_ITEMS = [
   {
     icon: MapPin,
     label: "Address",
-    value: "2F RAPHA Medical Building, National Highway, Koronadal City, South Cotabato",
+    value: "Esperanza Building, Quezon Blvd, Kidapawan, 9400 Cotabato",
   },
   {
     icon: Phone,
@@ -56,7 +56,7 @@ export function Contact() {
           <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
             <iframe
               title="RAPHA Diagnostic Laboratory location"
-              src="https://maps.google.com/maps?q=Koronadal%20City%2C%20South%20Cotabato&t=&z=14&ie=UTF8&iwloc=&output=embed"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15840.403035721323!2d125.0867329!3d6.9974143!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32f8f95e139c63b9%3A0x5df64a67d05c3618!2sRapha%20Diagnostic%20Laboratory!5e0!3m2!1sen!2sph!4v1787062360421!5m2!1sen!2sph"
               className="h-full min-h-[340px] w-full grayscale-[15%]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
 export function AuthShell({
@@ -16,6 +16,8 @@ export function AuthShell({
       <div className="relative hidden flex-col justify-between overflow-hidden bg-clinical-950 p-12 text-white lg:flex">
         <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-clinical-700/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-clinical-600/30 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-24 left-10 h-40 w-40 rounded-full bg-vital-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute right-24 top-1/3 h-24 w-24 rounded-full bg-ember-500/15 blur-2xl" />
 
         <Link href="/" className="relative z-10">
           <Logo variant="on-dark" />
@@ -43,6 +45,14 @@ export function AuthShell({
 
       <div className="flex items-center justify-center px-6 py-12 sm:px-10">
         <div className="w-full max-w-sm">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-clinical-700"
+          >
+            <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+            Back to site
+          </Link>
+
           <Link href="/" className="mb-8 flex justify-center lg:hidden">
             <Logo />
           </Link>

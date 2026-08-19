@@ -5,16 +5,22 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { LinkButton } from "@/components/ui/button";
+import { scrollToSection } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/#home", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#services", label: "Services" },
-  { href: "/#contact", label: "Contact" },
+  { id: "home", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "services", label: "Services" },
+  { id: "contact", label: "Contact" },
 ];
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+
+  const handleNavClick = (id: string) => {
+    setOpen(false);
+    scrollToSection(id);
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/85 backdrop-blur-md">
@@ -25,13 +31,14 @@ export function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-clinical-700"
+            <button
+              key={link.id}
+              type="button"
+              onClick={() => handleNavClick(link.id)}
+              className="relative text-sm font-medium text-slate-600 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:rounded-full after:bg-vital-500 after:transition-all after:duration-200 hover:text-clinical-700 hover:after:w-full"
             >
               {link.label}
-            </a>
+            </button>
           ))}
         </div>
 
@@ -59,14 +66,14 @@ export function Navbar() {
         <div className="border-t border-slate-100 bg-white px-6 py-4 md:hidden">
           <div className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-clinical-50 hover:text-clinical-700"
+              <button
+                key={link.id}
+                type="button"
+                onClick={() => handleNavClick(link.id)}
+                className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-clinical-50 hover:text-clinical-700"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </div>
           <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4">

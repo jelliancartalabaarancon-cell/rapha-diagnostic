@@ -6,6 +6,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Smooth-scrolls to a section by id on the current page.
+ *
+ * Plain `<a href="/#services">` links only scroll on the FIRST click:
+ * clicking again while already on that URL doesn't change the URL, so the
+ * browser never fires a navigation and never re-scrolls. This bypasses
+ * that by scrolling directly, every time, regardless of the current URL.
+ */
+export function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 export function formatDisplayDate(dateInput: string | Date): string {
   const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
 

@@ -188,11 +188,6 @@ export function LoginForm() {
         )}
       </Button>
 
-      <p className="rounded-xl bg-clinical-50/60 px-4 py-3 text-center text-xs text-clinical-700">
-        Demo account —{" "}
-        <span className="font-mono">demo@rapha.health</span> /{" "}
-        <span className="font-mono">Patient123!</span>
-      </p>
     </form>
   );
 }

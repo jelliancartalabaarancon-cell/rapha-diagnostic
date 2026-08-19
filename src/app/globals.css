@@ -27,6 +27,40 @@
   --color-clinical-800: #184c6f;
   --color-clinical-900: #17405d;
   --color-clinical-950: #0f2c4c;
+
+  /* RAPHA vital-green scale — secondary accent, echoes the green in the
+     logo mark. Used for "healthy/normal/verified" states and as a small
+     accent alongside blue — never as a dominant section color. */
+  --color-vital-50: #eef8ee;
+  --color-vital-100: #d9f0d8;
+  --color-vital-200: #b3e0b2;
+  --color-vital-300: #82c980;
+  --color-vital-400: #56b154;
+  --color-vital-500: #3d9a3b;
+  --color-vital-600: #2f7f2e;
+  --color-vital-700: #276827;
+  --color-vital-800: #215321;
+  --color-vital-900: #1c451c;
+  --color-vital-950: #0e2610;
+
+  /* RAPHA ember-orange scale — tertiary accent, echoes the orange in the
+     logo mark. Reserved for small highlights: a badge, a hover state, a
+     single detail — not backgrounds or large surfaces.
+     Named "ember" (not "amber") on purpose — Tailwind's built-in amber-*
+     is already used app-wide for "pending" status badges in the staff
+     and dashboard areas, so reusing that name would have silently
+     recolored those too. */
+  --color-ember-50: #fdf4ec;
+  --color-ember-100: #fbe6d2;
+  --color-ember-200: #f6cba3;
+  --color-ember-300: #f0a968;
+  --color-ember-400: #e88a3c;
+  --color-ember-500: #dc6f1f;
+  --color-ember-600: #c05a15;
+  --color-ember-700: #9c4713;
+  --color-ember-800: #7e3a15;
+  --color-ember-900: #683114;
+  --color-ember-950: #391708;
 }
 
 body {
