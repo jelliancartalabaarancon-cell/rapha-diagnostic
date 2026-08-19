@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import QRCode from "qrcode";
+import crypto from "crypto";
+import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
   params: Promise<{
@@ -55,12 +58,99 @@ export async function GET(_request: Request, { params }: RouteContext) {
   };
 
   try {
+    /*
+     * ==================================================
+     * CREATE A HASH OF THE OFFICIAL RESULT DATA
+     * ==================================================
+     *
+     * We hash the result information rather than the
+     * generated PDF itself.
+     *
+     * This allows the QR verification system to detect
+     * changes to the laboratory result.
+     */
+    const verificationData = JSON.stringify({
+      laboratoryNo: result.laboratoryNo,
+      patientName: result.patientName,
+      testName: result.testName,
+      dateReleased: result.dateReleased,
+      status: result.status,
+      specimen: result.specimen,
+      items: result.items,
+      remarks: result.remarks,
+    });
+
+    const documentHash = crypto
+      .createHash("sha256")
+      .update(verificationData)
+      .digest("hex");
+
+    /*
+     * ==================================================
+     * SAVE / UPDATE VERIFICATION RECORD
+     * ==================================================
+     */
+    await prisma.labResultVerification.upsert({
+      where: {
+        laboratoryNo: result.laboratoryNo,
+      },
+      update: {
+        documentHash,
+      },
+      create: {
+        laboratoryNo: result.laboratoryNo,
+        documentHash,
+      },
+    });
+
+    /*
+     * ==================================================
+     * VERIFICATION URL
+     * ==================================================
+     *
+     * When the QR code is scanned, the user will be sent
+     * to the verification page.
+     */
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3000";
+
+    const verificationUrl = `${baseUrl}/verify/result/${encodeURIComponent(
+      result.laboratoryNo,
+    )}`;
+
+    /*
+     * ==================================================
+     * GENERATE QR CODE
+     * ==================================================
+     */
+    const qrDataUrl = await QRCode.toDataURL(verificationUrl, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 180,
+    });
+
+    /*
+     * Convert the QR data URL into bytes.
+     */
+    const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
+
+    const qrImageBytes = Buffer.from(qrBase64, "base64");
+
+    /*
+     * ==================================================
+     * CREATE PDF
+     * ==================================================
+     */
     const pdfDoc = await PDFDocument.create();
 
     const page = pdfDoc.addPage([595.28, 841.89]);
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const qrImage = await pdfDoc.embedPng(qrImageBytes);
 
     const pageWidth = page.getWidth();
     const pageHeight = page.getHeight();
@@ -76,7 +166,9 @@ export async function GET(_request: Request, { params }: RouteContext) {
     const green = rgb(0.05, 0.55, 0.3);
 
     /*
-     * Header
+     * ==================================================
+     * HEADER
+     * ==================================================
      */
     page.drawText("RAPHA DIAGNOSTIC LABORATORY", {
       x: 50,
@@ -108,7 +200,9 @@ export async function GET(_request: Request, { params }: RouteContext) {
     });
 
     /*
-     * Result information
+     * ==================================================
+     * RESULT INFORMATION
+     * ==================================================
      */
     let y = pageHeight - 135;
 
@@ -133,7 +227,9 @@ export async function GET(_request: Request, { params }: RouteContext) {
     y -= 35;
 
     /*
-     * Patient information
+     * ==================================================
+     * PATIENT INFORMATION
+     * ==================================================
      */
     page.drawText("Patient Information", {
       x: 50,
@@ -189,11 +285,42 @@ export async function GET(_request: Request, { params }: RouteContext) {
       color: green,
     });
 
-    y -= 45;
+    /*
+     * ==================================================
+     * QR CODE
+     * ==================================================
+     */
+    page.drawRectangle({
+      x: pageWidth - 175,
+      y: pageHeight - 260,
+      width: 125,
+      height: 145,
+      borderColor,
+      borderWidth: 1,
+    });
+
+    page.drawImage(qrImage, {
+      x: pageWidth - 165,
+      y: pageHeight - 245,
+      width: 105,
+      height: 105,
+    });
+
+    page.drawText("Scan to verify", {
+      x: pageWidth - 158,
+      y: pageHeight - 255,
+      size: 8,
+      font: boldFont,
+      color: clinicalBlue,
+    });
 
     /*
-     * Results table
+     * ==================================================
+     * RESULTS TABLE
+     * ==================================================
      */
+    y -= 45;
+
     page.drawText("Test Results", {
       x: 50,
       y,
@@ -282,12 +409,6 @@ export async function GET(_request: Request, { params }: RouteContext) {
         color: darkText,
       });
 
-      /*
-       * IMPORTANT:
-       * Do not use "⁹" here.
-       * The standard WinAnsi font used by pdf-lib
-       * cannot encode that character.
-       */
       page.drawText(item.unit, {
         x: tableX + 285,
         y: y - 14,
@@ -310,7 +431,9 @@ export async function GET(_request: Request, { params }: RouteContext) {
     y -= 35;
 
     /*
-     * Remarks
+     * ==================================================
+     * REMARKS
+     * ==================================================
      */
     page.drawText("Laboratory Remarks", {
       x: 50,
@@ -341,7 +464,44 @@ export async function GET(_request: Request, { params }: RouteContext) {
     });
 
     /*
-     * Footer
+     * ==================================================
+     * VERIFICATION INFORMATION
+     * ==================================================
+     */
+    y -= 15;
+
+    page.drawText("Document Verification", {
+      x: 50,
+      y,
+      size: 10,
+      font: boldFont,
+      color: clinicalBlue,
+    });
+
+    y -= 17;
+
+    page.drawText("Scan the QR code to verify the authenticity and integrity", {
+      x: 50,
+      y,
+      size: 8,
+      font,
+      color: grayText,
+    });
+
+    y -= 13;
+
+    page.drawText("of this laboratory result against the RAPHA system.", {
+      x: 50,
+      y,
+      size: 8,
+      font,
+      color: grayText,
+    });
+
+    /*
+     * ==================================================
+     * FOOTER
+     * ==================================================
      */
     page.drawLine({
       start: {
@@ -357,7 +517,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     });
 
     page.drawText(
-      "Demo laboratory result — external laboratory system not yet connected.",
+      "Demo laboratory result - external laboratory system not yet connected.",
       {
         x: 50,
         y: 38,
@@ -368,7 +528,9 @@ export async function GET(_request: Request, { params }: RouteContext) {
     );
 
     /*
-     * Generate PDF
+     * ==================================================
+     * SAVE PDF
+     * ==================================================
      */
     const pdfBytes = await pdfDoc.save();
 

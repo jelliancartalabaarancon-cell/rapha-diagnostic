@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createService } from "@/lib/data/services";
@@ -22,10 +23,14 @@ export async function POST(request: Request) {
   /*
    * Only Staff and Admin can create services.
    */
-  if (session.user.role !== "STAFF" && session.user.role !== "ADMIN") {
+  if (
+    session.user.role !== "STAFF" &&
+    session.user.role !== "ADMIN"
+  ) {
     return NextResponse.json(
       {
-        error: "You are not authorized to create services.",
+        error:
+          "You are not authorized to create services.",
       },
       {
         status: 403,
@@ -49,7 +54,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, description, icon } = body;
+  const {
+    name,
+    description,
+    icon,
+  } = body;
 
   /*
    * Validate required fields.
@@ -70,7 +79,8 @@ export async function POST(request: Request) {
   }
 
   const serviceName = name.trim();
-  const serviceDescription = description.trim();
+  const serviceDescription =
+    description.trim();
   const serviceIcon = icon.trim();
 
   if (!serviceName) {
@@ -125,10 +135,14 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
-    if (error instanceof Error && error.message === "SERVICE_NAME_TAKEN") {
+    if (
+      error instanceof Error &&
+      error.message === "SERVICE_NAME_TAKEN"
+    ) {
       return NextResponse.json(
         {
-          error: "A service with this name already exists.",
+          error:
+            "A service with this name already exists.",
         },
         {
           status: 409,
@@ -136,7 +150,10 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Create service error:", error);
+    console.error(
+      "Create service error:",
+      error,
+    );
 
     return NextResponse.json(
       {
@@ -148,3 +165,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

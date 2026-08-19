@@ -1,8 +1,10 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { Field, Input } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -39,11 +41,8 @@ export function LoginForm() {
         setIsSubmitting(false);
 
         /*
-         * NextAuth may return "CredentialsSignin"
-         * when authorize() rejects the credentials.
-         *
-         * We check the actual account status separately
-         * so we can show the correct message to the patient.
+         * Check account status separately so we can
+         * display the correct message for deactivated accounts.
          */
         try {
           const response = await fetch("/api/auth/account-status", {
@@ -87,15 +86,15 @@ export function LoginForm() {
       let destination = "/dashboard";
 
       /*
-       * If the login was triggered by a protected page,
+       * If login was triggered by a protected page,
        * allow the callback URL to be used.
        */
       if (callbackUrl) {
         destination = callbackUrl;
       } else {
         /*
-         * Otherwise send the user to the correct area
-         * based on their account role.
+         * Send the user to the correct area based
+         * on their account role.
          */
         switch (session.user.role) {
           case "ADMIN":
@@ -173,6 +172,16 @@ export function LoginForm() {
         </div>
       </Field>
 
+      {/* Forgot Password */}
+      <div className="flex justify-end -mt-2">
+        <Link
+          href="/forgot-password"
+          className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          Forgot password?
+        </Link>
+      </div>
+
       <Button
         type="submit"
         className="w-full"
@@ -187,7 +196,7 @@ export function LoginForm() {
           </>
         )}
       </Button>
-
     </form>
   );
 }
+
