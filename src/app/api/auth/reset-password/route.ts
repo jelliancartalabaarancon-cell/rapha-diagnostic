@@ -2,11 +2,34 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+function validatePassword(password: string): string | null {
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long.";
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter.";
+  }
+
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number.";
+  }
+
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return "Password must contain at least one special character.";
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const { token, password } = await req.json();
 
-    // Validate input
     if (!token || typeof token !== "string") {
       return NextResponse.json(
         {
@@ -25,11 +48,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Basic password requirement
-    if (password.length < 8) {
+    // Validate password requirements
+    const passwordError = validatePassword(password);
+
+    if (passwordError) {
       return NextResponse.json(
         {
-          message: "Password must be at least 8 characters long.",
+          message: passwordError,
         },
         { status: 400 },
       );
@@ -40,12 +65,8 @@ export async function POST(req: Request) {
       where: {
         token,
       },
-      include: {
-        user: true,
-      },
     });
 
-    // Token does not exist
     if (!resetToken) {
       return NextResponse.json(
         {
@@ -74,7 +95,7 @@ export async function POST(req: Request) {
     // Hash the new password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Update user's password
+    // Update password
     await prisma.user.update({
       where: {
         id: resetToken.userId,
@@ -84,7 +105,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // Delete the token so it cannot be reused
+    // Delete token so it cannot be reused
     await prisma.passwordResetToken.delete({
       where: {
         id: resetToken.id,
